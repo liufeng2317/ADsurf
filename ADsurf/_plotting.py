@@ -4,6 +4,7 @@ import seaborn as sns
 import pandas as pd
 from ADsurf._utils import *
 from scipy.interpolate import interp1d
+import matplotlib.animation as animation
 
 plot_param = {
     'label_font':{
@@ -275,7 +276,6 @@ def plot_velVariation(iter_vs=[],iter_thick=[],vs_true=[],thick_true=[],save_pat
         show : Bool 
             =>figure the picture or not
     """
-    import matplotlib.animation as animation
     if torch.is_tensor(iter_vs):
         iter_vs = tensor2numpy(iter_vs)
     if torch.is_tensor(iter_thick):
