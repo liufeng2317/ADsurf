@@ -1,3 +1,12 @@
+<!--
+ * @Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
+ * @Date: 2023-02-10 17:39:49
+ * @LastEditors: LiuFeng
+ * @LastEditTime: 2023-07-03 10:30:17
+ * @FilePath: /AD_github/README.md
+ * @Description: 
+ * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
+-->
 # ADsurf: Multimodal surface wave inversion tool based on automatic differentiation (AD)
 
 <b >ADsurf</b> is a computationally efficient python program for the multimodal surface wave inversion and implementation for [Pytorch](https://pytorch.org/). The implementation follows a open source python project named [disba](https://github.com/keurfonluu/disba) which is an efficient tools for modeling of surface wave dispersion and implements from [Computer Programs in Seismology(CPS)](https://www.eas.slu.edu/eqc/eqccps.html)). We have reconstruct the forward-pass that it can solve the inverse gradients by AD automatically, and a new determint misfit function used in our program to make it applicable to multimodal dispersion curves inversion.
@@ -33,8 +42,9 @@ the observed dispersion data need to be orginized by a 2-D matrix: the first col
 | 0.11258588 	| 2.19494247            	|
 | 0.11712383 	| 2.19501066            	|
 | 0.12184468 	| 2.19510221            	|
+| ... 	| ...            	|
 
-![](Md_img/2023-02-14-10-30-34.png)
+<div align="center"><img src="Md_img/2023-07-03-09-50-23.png" width=60%></div>
 
 ### 2. Setting the model paramters and inversion paramters
 Details of all the paramters can be fond in [jupyter notebooks]("./00_test_increase.ipynb")
@@ -47,7 +57,11 @@ the key paramters including
 ### 3. Model initializing
 We provide two commond used layering method named Layering by ratio(LR) and Layering by Number (LN) for uses, more details can be found in [Cox and Teague (2016)](https://academic.oup.com/gji/article/207/1/422/2583608)
 
-![LN initializing](Md_img/2023-02-14-10-39-16.png)
+<div align="center"><img src="Md_img/2023-07-03-09-52-46.png"></div>
+
+However, it should be noted that linear inversion inevitably tends to fall into local minima, and to address this problem we try to initialise several initial velocity models simultaneously for simultaneous inversion (**Monte Carlo method**).
+
+More detail and comparation will discuss in Inversion part.
 
 ### 4. Inversion
 we have built a complete object-oriented programs:
@@ -63,13 +77,20 @@ inversion_model = inversion(
                         device="Cuda"
                         )
 ```
-![Misfit curve and the best inverted](Md_img/2023-02-14-10-41-33.png)
 
-![](Md_img/2023-02-14-10-42-18.png)
+The misfit decay with the iteration, We should note that although we have up to 2000 iterations here, the number can be reduced to 100 or less with parameter adjustment.
+<div align="center"><img src="Md_img/2023-07-03-10-02-00.png" width=80%></div>
+
+Although you can choose between inversion using the MonteCarlo multi-initial velocity model and inversion using just the single-initial velocity model, we recommend that you use the Monte Carlo inversion because you can get better results with little additional computational overhead.
+
+<div align="center"><img src="Md_img/2023-07-03-10-06-43.png" width=200%></div>
+
+We compared the computational efficiency of ADsurf and finite difference methods (FD) for inversion (it should be noted that we used the Determinant Misfit Function(DMF))
+
+<div align="center"><img src="Md_img/time_compare.png"></div>
 
 ### 5. Inverted dispersion curves
-![](Md_img/2023-02-14-10-43-09.png)
-![](Md_img/2023-02-14-10-43-23.png)
+<div align="center"><img src="Md_img/2023-07-03-10-29-45.png"></div>
 
 ### 6. result saving
 You can save all the intermediate processes and results of the inverson.
