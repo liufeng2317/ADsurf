@@ -100,3 +100,16 @@ Contributions are welcom [.disba](https://github.com/keurfonluu/disba) and [Comp
 
 ## License
 The ADsurf package is distributed under the [MIT license]("./LICENSE") (free software).
+
+### Contact
+ Liu Feng @ USTC, Email: liufeng2317@mail.ustc.edu.cn
+ Zhao Yan @ USTC, Email: zhaoyan123@mail.ustc.edu.cn
+```python
+@software{LiuFeng2317,
+  author       = {Feng Liu, Yan Zhao},
+  title        = {TorchInversion},
+  month        = July,
+  year         = 2023,
+  version      = {v0.0.1},
+}
+```
