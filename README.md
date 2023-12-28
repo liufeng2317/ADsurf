@@ -106,7 +106,7 @@ The ADsurf package is distributed under the [MIT license]("./LICENSE") (free sof
  Zhao Yan @ USTC, Email: zhaoyan123@mail.ustc.edu.cn
 ```python
 @software{LiuFeng2317,
-  author       = {Feng Liu, Yan Zhao},
+  author       = {Feng Liu},
   title        = {TorchInversion},
   month        = July,
   year         = 2023,
