@@ -2,8 +2,8 @@
 * Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
 * Date: 2022-11-14 20:18:06
 * LastEditors: LiuFeng
-* LastEditTime: 2022-12-18 14:43:42
-* FilePath: /AD_github/ADsurf/_utils.py
+* LastEditTime: 2024-01-03 15:11:46
+* FilePath: /ADsurf/ADsurf/_utils.py
 * Description: 
 * Copyright (c) 2022 by liufeng2317 email: 2397664955@qq.com, All Rights Reserved.
 '''
@@ -496,9 +496,9 @@ def numpy2tensor(a):
         transform numpy data into tensor
     """
     if not torch.is_tensor(a):
-        return torch.tensor(a)
+        return torch.tensor(a).to(torch.float32)
     else:
-        return a
+        return a.to(torch.float32)
 
 def tensor2numpy(a):
     """

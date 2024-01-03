@@ -266,7 +266,7 @@ def dltar4_matrix(vlist, tlist, d, a, b, rho, llw,device):
     wvno = (1/vlist.T)*torch.ones((vlist.shape[-1],omega_list.shape[-1])).to(device) * omega_list
     omega = (torch.ones_like(wvno)*omega_list).to(device)
     e = torch.zeros((wvno.shape[0],wvno.shape[1],a.shape[-1],5)).to(device)
-    omega = torch.max(omega, torch.tensor(1.0e-4)).to(device)
+    omega = torch.max(omega, torch.tensor(1.0e-4).to(torch.float32)).to(device)
     wvno2 = wvno * wvno
     xka = omega / a[-1]
     xkb = omega / b[-1]

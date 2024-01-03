@@ -323,7 +323,7 @@ def dltar4_vector(vc, t, d, alpha, beta, rho, llw=1):
 
     # dunkin's matrix
     e = torch.zeros((wvno.shape[-1],alpha.shape[-1],5))
-    omega = torch.max(omega, torch.tensor(1.0e-4))
+    omega = torch.max(omega, torch.tensor(1.0e-4).to(torch.float32))
     wvno2 = wvno * wvno
     xka = omega / alpha[-1]
     xkb = omega / beta[-1]

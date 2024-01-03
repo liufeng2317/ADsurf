@@ -263,7 +263,7 @@ def dltar4_matrix(vlist, tlist, d, a, b, rho, llw,device):
 
     # Dukin's temp matrix [station,vc,t,5]
     e = torch.zeros((omega.shape[0],omega.shape[1],omega.shape[2],a.shape[-1],5)).to(device)
-    omega = torch.max(omega, torch.tensor(1.0e-4))
+    omega = torch.max(omega, torch.tensor(1.0e-4).to(torch.float32))
     wvno2 = wvno * wvno
     xka = omega / a[:,-1].reshape(-1,1,1)
     xkb = omega / b[:,-1].reshape(-1,1,1)

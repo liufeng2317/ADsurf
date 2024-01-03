@@ -253,7 +253,7 @@ class cpu_iter_inversion():
                         para.data[-1].clip_(min=(para.data[-2]).detach())
                         iter_vs[j,:len(para.data.detach())] = para.data.detach()
                     elif k ==1:
-                        # 深度限制
+                        # constrain the depth
                         depth_temp = np.cumsum(para.data.detach().numpy())
                         for ind in range(len(depth_temp)):
                             if layering_method == "LR":
@@ -265,7 +265,7 @@ class cpu_iter_inversion():
                                     depth_temp[ind] = np.clip(depth_temp[ind],a_min=(depth_temp[ind-1]+layer_mindepth[ind]),a_max=layer_maxdepth[ind])
                         depth_temp = np.insert(depth_temp,0,0)
                         thick_temp = np.diff(depth_temp)
-                        # 厚度至少为wmin/3
+                        # thickness >= wmin/3
                         thick_temp = np.clip(thick_temp,a_min=layer_mindepth[0],a_max=None)
                         para.data = numpy2tensor(thick_temp)
                         iter_thick[j,:len(para.data.detach())] = para.data.detach()
@@ -273,13 +273,13 @@ class cpu_iter_inversion():
                 for para in calculator.parameters():
                     for ind in range(len(para.data)):
                         para.data[ind].clip_(min=lower_b[ind],max=upper_b[ind])
-                    # 限制半空间速度大于倒数第一层
+                    # constrain the velcoty of the last layer
                     # para.data[0].clip_(min=lower_b)
                     # para.data[-1].clip_(min=(para.data[-2]).detach())
                     iter_vs[j,:len(para.data.detach())] = para.data.detach()
             optimizer.step()
             scheduler.step()
-            loss_list[j]=loss.detach().numpy() # 注意这里一定不能保存tensor，因为会保存全部梯度
+            loss_list[j]=loss.detach().numpy()
             pbar.set_description("Iter:{},lr:{},DampV:{},loss sum:{:.4}".format(j,lr,damp_vertical,np.sum(loss.detach().numpy())))
             # early stopping
             if j>0:
@@ -335,7 +335,7 @@ class cpu_iter_inversion():
         }
 
 #########################################################################
-#                           GPU迭代反演版本
+#                           GPU itrative
 #########################################################################
 class gpu_iter_cal_grad(torch.nn.Module):
     """

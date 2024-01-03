@@ -257,14 +257,14 @@ def dltar4_matrix(vlist, tlist, d, a, b, rho, llw):
     """
     vlist = tensor2numpy(vlist)
     tlist = tensor2numpy(tlist)
-    vlist = torch.tensor(vlist).reshape(1,-1)
-    omega_list = torch.tensor(twopi/tlist).reshape(1,-1)
+    vlist = torch.tensor(vlist).to(torch.float32).reshape(1,-1)
+    omega_list = torch.tensor(twopi/tlist).to(torch.float32).reshape(1,-1)
     # Preallocate Dunkin's matrix
     ca = torch.empty((vlist.shape[-1],omega_list.shape[-1],5, 5))
     wvno = (1/vlist.T)*torch.ones((vlist.shape[-1],omega_list.shape[-1])) * omega_list
     omega = torch.ones_like(wvno)*omega_list
     e = torch.zeros((wvno.shape[0],wvno.shape[1],a.shape[-1],5))
-    omega = torch.max(omega, torch.tensor(1.0e-4))
+    omega = torch.max(omega, torch.tensor(1.0e-4).to(torch.float32))
     wvno2 = wvno * wvno
     xka = omega / a[-1]
     xkb = omega / b[-1]
