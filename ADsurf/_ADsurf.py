@@ -2,7 +2,7 @@
 * Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
 * Date: 2022-11-14 20:18:06
 * LastEditors: LiuFeng
-* LastEditTime: 2023-02-02 21:29:55
+* LastEditTime: 2024-03-12 14:27:05
 * FilePath: /AD_github/ADsurf/_ADsurf.py
 * Description: 
 * Copyright (c) 2022 by liufeng2317 email: 2397664955@qq.com, All Rights Reserved.
@@ -11,6 +11,7 @@ from ADsurf._plotting import *
 from ADsurf._utils import *
 from ADsurf._MonteCarlo import *
 from ADsurf._model import *
+import ADsurf._surf96 as surf
 import numpy as np
 import torch
 import os 
@@ -18,7 +19,7 @@ import os
 #########################################################################
 #                   Model parameter
 #########################################################################
-class model_param():
+class Model_param():
     """
     Model parameter setting
     ---------------
@@ -72,9 +73,7 @@ class model_param():
     vp_vs_ratio : the ratio of vp/vs (for 'Constant' initialize method )
         => float
     rho : a constant value for density (for 'Constant' initialize method)
-        => float
-    multimodal : 
-    fundamental_range : 
+        => float 
     """
     def __init__(self,
                 dc=None,
@@ -90,8 +89,7 @@ class model_param():
                 layer_number = None,
                 vp_vs_ratio = None,
                 rho = None,
-                multimodal = False,
-                fundamental_range = [], # for initialize the model 
+                fundamental_range=[],
                 ):
         self.dc = dc 
         self.vmin = vmin
@@ -109,7 +107,6 @@ class model_param():
         self.initialize_method = initialize_method
         self.vp_vs_ratio = vp_vs_ratio
         self.rho = rho
-        self.multimodal = multimodal
         self.fundamental_range = fundamental_range
         
     def _checkInput(self):
@@ -198,10 +195,190 @@ class inv_param():
         self.gamma = gamma
         self.optimizer = optimizer
 
+###########################################################################
+##                           Forward Simulation
+###########################################################################
+def cal_determinant(vel_model,model_param,sampling_method="log-wavelength",sampling_num=100):
+    """
+        calculate the determinant of dispersion function
+    """
+    a   = numpy2tensor(list2numpy(vel_model["vp"]))
+    b   = numpy2tensor(list2numpy(vel_model["vs"]))
+    rho = numpy2tensor(list2numpy(vel_model["rho"]))
+    d   = numpy2tensor(list2numpy(vel_model["thick"]))
+    tmin = model_param.tmin; tmax=model_param.tmax
+    fmin = 1/tmax;           fmax=1/tmin
+    Nt   = sampling_num
+    # sampling method
+    if sampling_method=="frequency":
+        t = 1/np.linspace(fmin,fmax,Nt)[::-1]
+    elif sampling_method=="period":
+        t = np.linspace(tmin,tmax,Nt)
+    elif sampling_method=="log-wavelength":
+        t = np.exp(np.linspace(np.log(tmin),np.log(tmax),Nt))
+    tlist = numpy2tensor(t)
+    # velocity list
+    vmin = model_param.vmin; vmax=model_param.vmax
+    dc   = model_param.dc
+    vlist = numpy2tensor(np.arange(vmin,vmax,dc))
+    # the fundation setting
+    wave      = "rayleigh"
+    algorithm = "dunkin"
+    ifunc     = ifunc_list[algorithm][wave]
+    llw = 0 if b[0] <= 0.0 else -1
+    F =  surf_matrix.dltar_matrix(vlist, tlist, d,a, b,rho, ifunc, llw)
+    return tlist,vlist,F
+    
+def cal_dispersion_curve(vel_model,model_param,sampling_method="log-wavelength",sampling_num=100,dispOrder=[0]):
+    """
+        dispOrder: [0,1,2]
+    """
+    b = numpy2tensor(list2numpy(vel_model["vs"]))
+    a = numpy2tensor(list2numpy(vel_model["vp"]))
+    rho = numpy2tensor(list2numpy(vel_model["rho"]))
+    d = numpy2tensor(list2numpy(vel_model["thick"]))
+    # tlist
+    tmin = model_param.tmin; tmax=model_param.tmax
+    fmin = 1/tmax;           fmax=1/tmin
+    Nt   = sampling_num
+    if sampling_method=="frequency":
+        t = 1/np.linspace(fmin,fmax,Nt)[::-1]
+    elif sampling_method=="period":
+        t = np.linspace(tmin,tmax,Nt)
+    elif sampling_method=="log-wavelength":
+        t = np.exp(np.linspace(np.log(tmin),np.log(tmax),Nt))
+    # velocity list
+    vmin = model_param.vmin; vmax=model_param.vmax
+    dc   = model_param.dc
+    # the matrix
+    wave      = "rayleigh"
+    algorithm = "dunkin"
+    ifunc     = ifunc_list[algorithm][wave]
+    # calculate the dispersion curve through search roots
+    if 0 in dispOrder:
+        mode  = 0
+        itype = 0
+        pvs_true_0 = surf.surf96(t,d,a,b,rho,mode,itype,ifunc,dc)
+        pvs_true_0 = tensor2numpy(pvs_true_0)
+        mask0 = (pvs_true_0>0)
+        t0 = numpy2tensor(t)[mask0]
+        pvs_true0 = pvs_true_0[mask0]
+    # mask0 = (pvs_true_0>0)* ((t<0.05) + (t>0.1))
+    if 1 in dispOrder:
+        # first order
+        mode = 1
+        pvs_true_1 = surf.surf96(t,d,a,b,rho,mode,itype,ifunc,dc)
+        pvs_true_1 = tensor2numpy(pvs_true_1)
+        mask1 = (pvs_true_1>0)
+        t1 = numpy2tensor(t)[mask1]
+        pvs_true1 = pvs_true_1[mask1]
+    if 2 in dispOrder:
+        # second order
+        mode = 2
+        pvs_true_2 = surf.surf96(t,d,a,b,rho,mode,itype,ifunc,dc)
+        pvs_true_2 = tensor2numpy(pvs_true_2)
+        mask2 = (pvs_true_2>0)
+        t2 = numpy2tensor(t)[mask2]
+        pvs_true2 = pvs_true_2[mask2]
+    
+    if len(dispOrder)==3:
+        if len(t0)>0 and len(t1)>0 and len(t2)>0:
+            pvs_true_disp = np.hstack((pvs_true0,pvs_true1,pvs_true2))
+            pvs_true_t = np.hstack((t0,t1,t2))
+            pvs_order = np.zeros_like(pvs_true_t)
+            pvs_order[len(t0):len(t0)+len(t1)] = 1
+            pvs_order[len(t0)+len(t1):] = 2
+            pvs_true = np.hstack((pvs_true_t.reshape(-1,1),pvs_true_disp.reshape(-1,1),pvs_order.reshape(-1,1)))
+        elif len(t0)>0 and len(t1)>0:
+            pvs_true_disp = np.hstack((pvs_true0,pvs_true1))
+            pvs_true_t = np.hstack((t0,t1))
+            pvs_order = np.zeros_like(pvs_true_t)
+            pvs_order[len(t0):] = 1
+            pvs_true = np.hstack((pvs_true_t.reshape(-1,1),pvs_true_disp.reshape(-1,1),pvs_order.reshape(-1,1)))
+        else:
+            pvs_order = np.zeros(len(t0))
+            pvs_true = np.hstack((t0.reshape(-1,1),pvs_true_0.reshape(-1,1),pvs_order.reshape(-1,1)))
+    elif 0 in dispOrder and 1 in dispOrder:
+        pvs_true_disp = np.hstack((pvs_true0,pvs_true1))
+        pvs_true_t = np.hstack((t0,t1))
+        pvs_order = np.zeros_like(pvs_true_t)
+        pvs_order[len(t0):] = 1
+        pvs_true = np.hstack((pvs_true_t.reshape(-1,1),pvs_true_disp.reshape(-1,1),pvs_order.reshape(-1,1)))
+    else:
+        pvs_order = np.zeros(len(t0))
+        pvs_true = np.hstack((t0.reshape(-1,1),pvs_true_0.reshape(-1,1),pvs_order.reshape(-1,1)))
+    return pvs_true
+        
+#########################################################################
+#             Ground Truth model for Synthetic Test
+#########################################################################
+class Model():
+    """
+        A class used for synthetic Test
+    """
+    def __init__(self):
+        self.true_model = {}
+        self.init_model = {}
+
+class True_model():
+    """
+    True model
+    ---------------------
+    model_param : the class of model parameter
+        => class
+    pvs_obs : the observed dispersion data
+        => 2-D list/array [period,phase velocity]
+    thick : the specified thickness (km)
+        => 1-D array/list
+    vs : the specified shear-wave velocity (km/s)
+        => 1-D array/list
+    vp : the specified compression-wave velocity (km/s)
+        => 1-D array/list
+    rho : the specified density (kg/m3)
+        => 1-D array/list
+    """
+    def __init__(self,
+                model_param,
+                thick=[],
+                vs = [],
+                vp = [],
+                rho= [],
+                ):
+        # observed dispersion curve data
+        self.thick = list2numpy(thick)
+        self.vp = list2numpy(vp)
+        self.vs = list2numpy(vs)
+        self.rho = list2numpy(rho)
+        self.model_param = model_param
+        
+        self.tlist = []
+        self.vlist = []
+        
+        # model
+        self.vel_model = {
+            "vs":self.vs,
+            "vp":self.vp,
+            "rho":self.rho,
+            "thick":self.thick,
+        }
+    
+    def _cal_determinant(self,sampling_method="log-wavelength",sampling_num=100):
+        tlist,vlist,F = cal_determinant(self.vel_model,self.model_param,sampling_method=sampling_method,sampling_num=sampling_num)
+        self.tlist = tlist
+        self.vlist = vlist
+        return F
+    
+    def _cal_dispersion_curve(self,sampling_method="log-wavelength",sampling_num=100,dispOrder=[0]):
+        """
+            dispOrder: [0,1,2]
+        """
+        pvs = cal_dispersion_curve(self.vel_model,self.model_param,sampling_method=sampling_method,sampling_num=sampling_num,dispOrder=dispOrder)
+        return pvs
+
 #########################################################################
 #             Parameterization and initialize model
 #########################################################################
-class init_model():
+class Init_model():
     """
     initial model
     ---------------------
@@ -234,6 +411,8 @@ class init_model():
         self.rho = list2numpy(rho)
         self.model_param = model_param
         
+        self.tlist = []
+        self.vlist = []
         # model
         self.init_model = {
             "vs":[],
@@ -263,10 +442,19 @@ class init_model():
         layering_ratio = self.model_param.layering_ratio
         depth_factor = self.model_param.depth_factor
         layer_number = self.model_param.layer_number
+        if self.pvs_obs.shape[1] == 3:
+            mask = self.pvs_obs[:,2]==0
+        else:
+            mask = self.pvs_obs[:,0]>0
         
-        if layering_method == "LR":
+        if len(self.model_param.fundamental_range)>0:
+                mask = mask*(self.pvs_obs[:,0]>self.model_param.fundamental_range[0])*(self.pvs_obs[:,0]<self.model_param.fundamental_range[1])
+        
+        pvs_obs = list2numpy(self.pvs_obs)
+        
+        if layering_method.lower() == "lr":
             # layering ratio
-            wmin,wmax = np.min(list2numpy(self.pvs_obs)[:,0]*list2numpy(self.pvs_obs)[:,1]),np.max(list2numpy(self.pvs_obs)[:,0]*list2numpy(self.pvs_obs)[:,1])
+            wmin,wmax = np.min(pvs_obs[:,0][mask]*pvs_obs[:,1][mask]),np.max(pvs_obs[:,0][mask]*pvs_obs[:,1][mask])
             layer_mindepth,layer_maxdepth = depth_lr(wmin=wmin,wmax=wmax,lr=layering_ratio,depth_factor=depth_factor)
             # the init depth = the average depth of maximum and minimum depth
             layer_depth = (np.array(layer_mindepth)+np.array(layer_maxdepth))/2
@@ -278,48 +466,47 @@ class init_model():
             self.init_model["layer_mindepth"] = layer_mindepth
             self.init_model["layer_maxdepth"] = layer_maxdepth
     
-        elif layering_method == "LN":
+        elif layering_method.lower() == "ln":
             # layeing by number
-            wmin,wmax = np.min(list2numpy(self.pvs_obs)[:,0]*list2numpy(self.pvs_obs)[:,1]),np.max(list2numpy(self.pvs_obs)[:,0]*list2numpy(self.pvs_obs)[:,1])
+            wmin,wmax = np.min(pvs_obs[:,0][mask]*pvs_obs[:,1][mask]),np.max(pvs_obs[:,0][mask]*pvs_obs[:,1][mask])
             layer_mindepth,layer_maxdepth = depth_ln(wmin=wmin,wmax=wmax,nlayers=layer_number,depth_factor=depth_factor)
             # take the average thickness of maximum thickness as the initiali depth
             layer_thick = [layer_maxdepth[0]/layer_number]*layer_number
             self.init_model["thick"] = np.array(layer_thick)
             self.init_model["layer_mindepth"] = layer_mindepth
             self.init_model["layer_maxdepth"] = layer_maxdepth
-
-        else:
+        elif layering_method.lower() == "none":
             # using the input thickness as the initialized thickness
             if len(numpy2list(self.thick))==0:
                 raise ValueError("No specify the layering method and not input the layer's parameter !!")
             self.init_model["thick"] = self.thick
-            
+            wmin,wmax = np.min(pvs_obs[:,0][mask]*pvs_obs[:,1][mask]),np.max(pvs_obs[:,0][mask]*pvs_obs[:,1][mask])
+            layer_mindepth,layer_maxdepth = depth_ln(wmin=wmin,wmax=wmax,nlayers=len(self.thick),depth_factor=depth_factor)
+            self.init_model["layer_mindepth"] = layer_mindepth
+            self.init_model["layer_maxdepth"] = layer_maxdepth
     
     def _genInitModel(self):
         """
             generate the inital model
         """
         initialize_method = self.model_param.initialize_method
-        thick = list2numpy(self.init_model["thick"])
-        
-        # select the fundamental data to initialize the model  【还存在问题，应该将输入数据变成三个维度！！！】
-        if self.model_param.multimodal == True:
-            if len(self.model_param.fundamental_range)>0:
-                mask = (self.pvs_obs[:,0]>self.model_param.fundamental_range[0])*(self.pvs_obs[:,0]<self.model_param.fundamental_range[1])
-            else:
-                mask = self.pvs_obs[:,0]>0
+        thick   = list2numpy(self.init_model["thick"])
+        pvs_obs = list2numpy(self.pvs_obs)
+        # select the fundamental data to initialize the model
+        if pvs_obs.shape[1] == 3:
+            mask = pvs_obs[:,2]==0
         else:
-            mask = self.pvs_obs[:,0]>0
-        
+            mask = pvs_obs[:,0]>0
+        # initialize the velocity model
         if initialize_method == "Brocher":
-            _,init_vp,init_vs,init_rho = gen_init_model(list2numpy(self.pvs_obs)[:,0][mask],list2numpy(self.pvs_obs)[:,1][mask],thick=thick,area=True)
+            _,init_vp,init_vs,init_rho = gen_init_model(pvs_obs[:,0][mask],pvs_obs[:,1][mask],thick=thick,area=True)
         elif initialize_method == "Constant":
             vp_vs_ratio = self.model_param.vp_vs_ratio
             rho = self.model_param.rho
-            _,init_vp,init_vs,init_rho = gen_init_model1(list2numpy(self.pvs_obs)[:,0][mask],list2numpy(self.pvs_obs)[:,1][mask],thick=thick,vp_vs_ratio=vp_vs_ratio,rho=rho,area=True)
+            _,init_vp,init_vs,init_rho = gen_init_model1(pvs_obs[:,0][mask],pvs_obs[:,1][mask],thick=thick,vp_vs_ratio=vp_vs_ratio,rho=rho,area=True)
         else:
-            init_vp = self.vp
-            init_vs = self.vs
+            init_vp  = self.vp
+            init_vs  = self.vs
             init_rho = self.rho
             if len(numpy2list(init_vp))==0:
                 raise NameError("No specify the initialize method and input vs/vp/rho values!!")
@@ -334,6 +521,19 @@ class init_model():
         self.pvs_obs = list2numpy(self.pvs_obs)
         if not self.pvs_obs.ndim==2:
             raise ValueError("The observed dispersion curve need a 2-D array")
+
+    def _cal_determinant(self,sampling_method="log-wavelength",sampling_num=100):
+        tlist,vlist,F = cal_determinant(self.init_model,self.model_param,sampling_method=sampling_method,sampling_num=sampling_num)
+        self.tlist = tlist
+        self.vlist = vlist
+        return F
+    
+    def _cal_dispersion_curve(self,sampling_method="log-wavelength",sampling_num=100,dispOrder=[0]):
+        """
+            dispOrder: [0,1,2]
+        """
+        pvs = cal_dispersion_curve(self.init_model,self.model_param,sampling_method=sampling_method,sampling_num=sampling_num,dispOrder=dispOrder)
+        return pvs
 
 #########################################################################
 #                   Initialize model using MonteCarlo method
@@ -403,12 +603,12 @@ class init_model_MonteCarlo():
     
     def _MonteCarlo(self):
         pvs_obs = self.init_model.pvs_obs
-        clist = self.model_param.clist
+        clist   = self.model_param.clist
         d = list2numpy(self.init_model.init_model["thick"])
         a = list2numpy(self.init_model.init_model["vp"])
         b = list2numpy(self.init_model.init_model["vs"])
         rho = list2numpy(self.init_model.init_model["rho"])
-        depth_up_boundary = list2numpy(self.init_model.init_model["layer_maxdepth"])
+        depth_up_boundary   = list2numpy(self.init_model.init_model["layer_maxdepth"])
         depth_down_boundary = list2numpy(self.init_model.init_model["layer_mindepth"])
         vsrange = self.vsrange
         initialize_method = self.model_param.initialize_method
@@ -444,9 +644,9 @@ class init_model_MonteCarlo():
         self.MonteCarlo_model["rho"] = MonteCarlo_rho
         self.MonteCarlo_model["thick"] = MonteCarlo_thick
         self.MonteCarlo_model["loss"] = MonteCarlo_loss
-    
+        
 ###########################################################################
-##                           自动选择反演算法
+##                           Inversion Setting
 ###########################################################################
 def inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign="mul",vsrange=[0.1,2],AK135_data=[],device=torch.device("cuda" if torch.cuda.is_available() else 'cpu')):
     """
@@ -470,13 +670,7 @@ def inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign="mul",vsrang
     """
     init_vs = init_model.init_model["vs"]
     if list2numpy(init_vs).ndim==1:
-        if device == "cpu":
-            return cpu_iter_inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign,vsrange,AK135_data)
-        else:
-            return gpu_iter_inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign,vsrange,AK135_data,device)
+        return iter_inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign,vsrange,AK135_data,device)
     elif list2numpy(init_vs).ndim==2:
-        if device == "cpu":
-            return cpu_multi_inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign,vsrange,AK135_data)
-        else:
-            return gpu_multi_inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign,vsrange,AK135_data,device)
+        return multi_inversion(model_param,inv_param,init_model,pvs_obs,vsrange_sign,vsrange,AK135_data,device)
     

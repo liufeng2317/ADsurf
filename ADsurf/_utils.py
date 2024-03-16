@@ -2,7 +2,7 @@
 * Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
 * Date: 2022-11-14 20:18:06
 * LastEditors: LiuFeng
-* LastEditTime: 2024-01-03 15:11:46
+* LastEditTime: 2024-03-12 14:45:08
 * FilePath: /ADsurf/ADsurf/_utils.py
 * Description: 
 * Copyright (c) 2022 by liufeng2317 email: 2397664955@qq.com, All Rights Reserved.
@@ -42,7 +42,6 @@ def dictToObj(dictObj):
 ##########################################################################
 #                            generate model   
 ##########################################################################
-
 def gen_model(thick,vs,area=False):
     """
     generate the initial model based on empirical formula 
@@ -60,10 +59,10 @@ def gen_model(thick,vs,area=False):
         model:Dict 
             the generated model
     """
-    thick = np.array(thick)
-    vs = np.array(vs)
-    vp = 0.9409 + 2.0947*vs - 0.8206*vs**2+ 0.2683*vs**3 - 0.0251*vs**4
-    rho = 1.6612*vp - 0.4721*vp**2 + 0.0671*vp**3 - 0.0043*vp**4 + 0.000106*vp**5
+    thick   = np.array(thick)
+    vs      = np.array(vs)
+    vp      = 0.9409 + 2.0947*vs - 0.8206*vs**2+ 0.2683*vs**3 - 0.0251*vs**4
+    rho     = 1.6612*vp - 0.4721*vp**2 + 0.0671*vp**3 - 0.0043*vp**4 + 0.000106*vp**5
     model = {
         "thick":thick,
         "vp":vp,

@@ -2,15 +2,15 @@
 Author: liufeng2317 2397664955@qq.com
 Date: 2022-10-19 21:07:44
 * LastEditors: LiuFeng
-* LastEditTime: 2023-02-02 21:28:23
+* LastEditTime: 2024-03-13 17:34:45
 * FilePath: /AD_github/ADsurf/_MonteCarlo.py
 Description: 
 '''
 import sys
 sys.path.append("ADsurf")
 sys.path.append("ADsurf/_cps")
-import _cps._surf96_vector as surf_vector
-import _cps._surf96_matrix as surf_matrix
+import ADsurf._cps._surf96_vector as surf_vector
+import ADsurf._cps._surf96_matrix as surf_matrix
 from tqdm import tqdm
 from ADsurf._utils import *
 
@@ -21,11 +21,11 @@ def ADsurf_MonteCarlo(
                     vsrange_sign="mul",
                     vsrange=[-0.2,0.2],             # the range of vs 
                     gen_velMethod="Brocher",        # the initialized method ["Brocher","Constant"]
-                    vp_vs_ratio = 2.45,           # use the uniform initialized method 
+                    vp_vs_ratio = 2.45,             # use the uniform initialized method 
                     sampling_num = 200,             # the number of sampling points
                     sampling_method = "normal",     # the method to sampling (Brocher of Constant)
                     sigma_vs=10,                    # a ratio of sigma = (vs_up - vs_down)/ratio
-                    sigma_thick=0,                 # a ratio of sigma = (vs_up - vs_down)/ratio
+                    sigma_thick=0,                  # a ratio of sigma = (vs_up - vs_down)/ratio
                     ifunc=2,
                     AK135_data=[],
                     forward=True,
@@ -80,23 +80,23 @@ def ADsurf_MonteCarlo(
     # the boundary of model
     if vsrange_sign == "mul":
         vs_down_boundary = b*vsrange[0]
-        vs_up_boundary = b*vsrange[1]
+        vs_up_boundary   = b*vsrange[1]
     else:
         vs_down_boundary = b+vsrange[0]
-        vs_up_boundary = b+vsrange[1]
+        vs_up_boundary   = b+vsrange[1]
     
     # the generated model
-    MonteCarlo_vs = np.ones((sampling_num,b.shape[0]))*b
-    MonteCarlo_thick = np.ones_like(MonteCarlo_vs)*d
-    MonteCarlo_vp = np.ones_like(MonteCarlo_vs)*a
-    MonteCarlo_rho = np.ones_like(MonteCarlo_vs)*rho
+    MonteCarlo_vs       = np.ones((sampling_num,b.shape[0]))*b
+    MonteCarlo_thick    = np.ones_like(MonteCarlo_vs)*d
+    MonteCarlo_vp       = np.ones_like(MonteCarlo_vs)*a
+    MonteCarlo_rho      = np.ones_like(MonteCarlo_vs)*rho
 
     # the disturbation vs
     for i in range(b.shape[0]):
         if sampling_method=="normal":
             MonteCarlo_vs[1:,i] = np.random.normal(loc=b[i],scale=(vs_up_boundary[i]-vs_down_boundary[i])/sigma_vs,size=sampling_num-1)
             MonteCarlo_vs[1:,i] = np.clip(MonteCarlo_vs[1:,i],vs_down_boundary[i],vs_up_boundary[i])
-    
+
     # the disturbation depth
     if len(depth_up_boundary)==d.shape[0] and len(depth_down_boundary)==d.shape[0] and sigma_thick>0:
         if depth_up_boundary[0] == 0:
@@ -137,14 +137,13 @@ def ADsurf_MonteCarlo(
             MonteCarlo_thick[0] = d
             # 最后一层的厚度等于倒数第二层厚度
             MonteCarlo_thick[:,-1] = MonteCarlo_thick[:,-2]
-    
     if gen_velMethod=="Brocher":
         for i in range(1,sampling_num):
-            thick,vp,vs,rho = gen_model(MonteCarlo_thick[i],MonteCarlo_vs[i],area=True)
+            thick,vp,vs,rho     = gen_model(MonteCarlo_thick[i],MonteCarlo_vs[i],area=True)
             MonteCarlo_thick[i] = thick 
-            MonteCarlo_vp[i] = vp 
-            MonteCarlo_vs[i] = vs 
-            MonteCarlo_rho[i] = rho
+            MonteCarlo_vp[i]    = vp 
+            MonteCarlo_vs[i]    = vs 
+            MonteCarlo_rho[i]   = rho
     elif gen_velMethod=="Constant":
         for i in range(1,sampling_num):
             thick,vp,vs,rho = gen_model1(MonteCarlo_thick[i],MonteCarlo_vs[i],vp_vs_ratio=vp_vs_ratio,rho=rho,area=True)
@@ -168,16 +167,16 @@ def ADsurf_MonteCarlo(
             MonteCarlo_vp[i] = vp 
             MonteCarlo_vs[i] = vs 
             MonteCarlo_rho[i] = rho
+        
     loss_lists = np.zeros(sampling_num)
-    pvs_obs = pvs_obs
-    tlist = numpy2tensor(pvs_obs[:,0].reshape(-1))
-    vlist = numpy2tensor(pvs_obs[:,1].reshape(-1))
+    tlist = numpy2tensor(pvs_obs[:,0].copy().reshape(-1))
+    vlist = numpy2tensor(pvs_obs[:,1].copy().reshape(-1))
     
     if forward:
         # MonteCarlo search
         pbar = tqdm(range(sampling_num))
         for i in pbar:
-            d = numpy2tensor(MonteCarlo_thick[i])
+            d  = numpy2tensor(MonteCarlo_thick[i])
             rho=numpy2tensor(MonteCarlo_rho[i])
             a = numpy2tensor(MonteCarlo_vp[i])
             b = numpy2tensor(MonteCarlo_vs[i])
@@ -190,7 +189,7 @@ def ADsurf_MonteCarlo(
             loss_mean = torch.sum(torch.abs(loss))/len(loss)
             loss_lists[i] = loss_mean
             pbar.set_description("MonteCarlo: Iter:{},loss:{:.5}".format(i,loss_mean.detach().numpy()))
-        
+            
     MonteCarlo_search = {
         "model":{
             "thick":MonteCarlo_thick,
