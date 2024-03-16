@@ -580,7 +580,7 @@ class multi_inversion():
         else:
             lower_b = b[0]*torch.ones_like(b) + self.vsrange[0]
             upper_b = b[0]*torch.ones_like(b) + self.vsrange[1]
-            lower_b[:,-1] = 4.5
+            # lower_b[:,-1] = 4.5
 
         # early stoopint param
         patience = 20

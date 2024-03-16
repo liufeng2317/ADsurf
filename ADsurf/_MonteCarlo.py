@@ -2,7 +2,7 @@
 Author: liufeng2317 2397664955@qq.com
 Date: 2022-10-19 21:07:44
 * LastEditors: LiuFeng
-* LastEditTime: 2024-03-13 17:34:45
+* LastEditTime: 2024-03-16 21:27:40
 * FilePath: /AD_github/ADsurf/_MonteCarlo.py
 Description: 
 '''
@@ -112,11 +112,11 @@ def ADsurf_MonteCarlo(
                     MonteCarlo_depth[:,i] = np.clip(MonteCarlo_depth[:,i],a_min=depth_down_boundary[i],a_max=depth_up_boundary[i])
             MonteCarlo_depth = np.insert(MonteCarlo_depth,0,0,axis=1)
             MonteCarlo_thick = np.diff(MonteCarlo_depth,axis=1)
-            # 保证厚度大于wmin/3
+            # ensure the thickness > wmin/3
             MonteCarlo_thick = np.clip(MonteCarlo_thick,a_min=depth_down_boundary[1],a_max=None)
-            # 第一个厚度是输入值
+            # the first thickness = d
             MonteCarlo_thick[0] = d
-            # 最后一层的厚度等于倒数第二层厚度
+            # the last thickness > the second thickness from bottom
             MonteCarlo_thick[:,-1] = MonteCarlo_thick[:,-2]
         elif layering_method == "LN":
             MonteCarlo_depth = MonteCarlo_thick
@@ -131,11 +131,11 @@ def ADsurf_MonteCarlo(
                         MonteCarlo_depth[:,i] = np.clip(MonteCarlo_thick[:,i],a_min=MonteCarlo_depth[:,i-1] + depth_down_boundary[i],a_max=depth_up_boundary[i])
             MonteCarlo_depth = np.insert(MonteCarlo_depth,0,0,axis=1)
             MonteCarlo_thick = np.diff(MonteCarlo_depth,axis=1)
-            # 保证厚度大于wmin/3
+            # ensure the thickness > wmin/3
             MonteCarlo_thick = np.clip(MonteCarlo_thick,a_min=depth_down_boundary[1],a_max=None)
-            # 第一个厚度是输入值
+            # the first thickness = d
             MonteCarlo_thick[0] = d
-            # 最后一层的厚度等于倒数第二层厚度
+            # the last thickness > the second thickness from bottom
             MonteCarlo_thick[:,-1] = MonteCarlo_thick[:,-2]
     if gen_velMethod=="Brocher":
         for i in range(1,sampling_num):
