@@ -1,10 +1,6 @@
-import ADsurf._cps._surf96_vector as surf_vector_iter_cpu
 import ADsurf._cps._surf96_vector_gpu as surf_vector_iter_gpu
-import ADsurf._cps._surf96_vectorAll as surf_vector_all_cpu
 import ADsurf._cps._surf96_vectorAll_gpu as surf_vector_all_gpu
-import ADsurf._cps._surf96_matrix as surf_matrix_iter_cpu
 import ADsurf._cps._surf96_matrix_gpu as surf_matrix_iter_gpu
-import ADsurf._cps._surf96_matrixAll as surf_matrix_all_cpu
 import ADsurf._cps._surf96_matrixAll_gpu as surf_matrix_all_gpu
 from ADsurf._utils import *
 import torch
@@ -632,9 +628,7 @@ class multi_inversion():
                         
                     para.data.clip_(min=lower_b,max=upper_b)
                     # velocity of last layer > the second layer from bottom
-                    # para.data[:,-1].clip_(min=(para.data[:,-2]).detach())
-                    # para.data[0].clip_(min=lower_b)
-                    # para.data[-1].clip_(min=(para.data[-2]).detach()) 
+                    para.data[:,-1].clip_(min=(para.data[:,-2]).detach())
                     iter_vs[j] = para.data.detach()
                     
             optimizer.step()
