@@ -2,7 +2,7 @@
  * @Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
  * @Date: 2023-02-10 17:39:49
  * @LastEditors: LiuFeng
- * @LastEditTime: 2024-05-21 23:17:05
+ * @LastEditTime: 2024-05-21 23:22:18
  * @FilePath: /AD_github/README.md
  * @Description: 
  * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -16,7 +16,6 @@
 By Liu Feng @ USTC, Email: liufeng2317@mail.ustc.edu.cn
 
 ****
-
 
 ## Installation
 We recommend building a new environment to run the code, and anaconda can be used to help you:
@@ -36,8 +35,8 @@ more details can be found in [Pytorch instal](https://pytorch.org/)
 
 ****
 
-## Related Knoledges
-> Please refer to the article for theoretical details: [Multimodal surface wave inversion with automatic differentiation](https://academic.oup.com/gji/advance-article/doi/10.1093/gji/ggae155/7659841?login=true)
+## Related Knowledges
+> Please refer to the article for theoretical details: [Multimodal surface wave inversion with automatic differentiation](https://doi.org/10.1093/gji/ggae155)
 
 ### 1) Determinant Misfit Function v.s. Traditional Misift Function
 
