@@ -2,7 +2,7 @@
  * @Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
  * @Date: 2023-02-10 17:39:49
  * @LastEditors: LiuFeng
- * @LastEditTime: 2024-05-21 23:22:18
+ * @LastEditTime: 2024-05-21 23:24:55
  * @FilePath: /AD_github/README.md
  * @Description: 
  * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -115,11 +115,20 @@ You can save all the intermediate processes and results of the inverson.
 
 </details>
 
+****
+
 ## Contributing
-Contributions are welcom [.disba](https://github.com/keurfonluu/disba) and [Computer Programs in Seismology (CPS)](http://www.eas.slu.edu/eqc/eqccps.html).
+Contributions are welcome [.disba](https://github.com/keurfonluu/disba) and [Computer Programs in Seismology (CPS)](http://www.eas.slu.edu/eqc/eqccps.html).
+
+****
 
 ## License
 The ADsurf package is distributed under the [MIT license]("./LICENSE") (free software).
+
+## Citation
+If you find ADsurf useful, please cite the following reference:
+
+[Feng Liu, Junlun Li, Lei Fu, Laiyu Lu, Multimodal surface wave inversion with automatic differentiation, Geophysical Journal International, Volume 238, Issue 1, July 2024, Pages 290–312, https://doi.org/10.1093/gji/ggae155](https://doi.org/10.1093/gji/ggae155)
 
 ### Contact
  Liu Feng @ USTC, Email: liufeng2317@mail.ustc.edu.cn
