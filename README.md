@@ -2,14 +2,14 @@
  * @Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
  * @Date: 2023-02-10 17:39:49
  * @LastEditors: LiuFeng
- * @LastEditTime: 2024-05-22 00:06:39
+ * @LastEditTime: 2024-05-22 00:12:14
  * @FilePath: /AD_github/README.md
  * @Description: 
  * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
 -->
 # ADsurf: Multimodal surface wave inversion with automatic differentiation
 
-> &nbsp;&nbsp; <font face="微软雅黑" size=5><b >ADsurf</b> is a computationally efficient python program for the multimodal surface wave inversion and implementation for [Pytorch](https://pytorch.org/). The implementation follows a open source python project named [disba](https://github.com/keurfonluu/disba) which is an efficient tools for modeling of surface wave dispersion and implements from [Computer Programs in Seismology(CPS)](https://www.eas.slu.edu/eqc/eqccps.html)). We have reconstruct the forward-pass that it can solve the inverse gradients by AD automatically, and a new determint misfit function used in our program to make it applicable to multimodal dispersion curves inversion.</font>
+> &nbsp;&nbsp; <p style="line-height:1.5;"> <font face="微软雅黑" size=6><b >ADsurf</b> is a computationally efficient python program for the multimodal surface wave inversion and implementation for [Pytorch](https://pytorch.org/). The implementation follows a open source python project named [disba](https://github.com/keurfonluu/disba) which is an efficient tools for modeling of surface wave dispersion and implements from [Computer Programs in Seismology(CPS)](https://www.eas.slu.edu/eqc/eqccps.html)). We have reconstruct the forward-pass that it can solve the inverse gradients by AD automatically, and a new determint misfit function used in our program to make it applicable to multimodal dispersion curves inversion.</font></p>
 
 <div align="center"><img src='./Md_img/Figure4.jpg'></div>
 
