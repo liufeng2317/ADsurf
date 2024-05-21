@@ -2,18 +2,23 @@
  * @Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
  * @Date: 2023-02-10 17:39:49
  * @LastEditors: LiuFeng
- * @LastEditTime: 2023-07-03 10:30:17
+ * @LastEditTime: 2024-05-21 23:17:05
  * @FilePath: /AD_github/README.md
  * @Description: 
  * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
 -->
-# ADsurf: Multimodal surface wave inversion tool based on automatic differentiation (AD)
+# ADsurf: Multimodal surface wave inversion with automatic differentiation
+
+<div align="center"><img src='./Md_img/Figure4.jpg'></div>
 
 <b >ADsurf</b> is a computationally efficient python program for the multimodal surface wave inversion and implementation for [Pytorch](https://pytorch.org/). The implementation follows a open source python project named [disba](https://github.com/keurfonluu/disba) which is an efficient tools for modeling of surface wave dispersion and implements from [Computer Programs in Seismology(CPS)](https://www.eas.slu.edu/eqc/eqccps.html)). We have reconstruct the forward-pass that it can solve the inverse gradients by AD automatically, and a new determint misfit function used in our program to make it applicable to multimodal dispersion curves inversion.
 
 By Liu Feng @ USTC, Email: liufeng2317@mail.ustc.edu.cn
 
-## 1.Install
+****
+
+
+## Installation
 We recommend building a new environment to run the code, and anaconda can be used to help you:
 ```python
 conda create --name ADsurf python==3.8
@@ -29,9 +34,25 @@ conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvi
 ```
 more details can be found in [Pytorch instal](https://pytorch.org/)
 
-## 2. run demo
-The follwing is an example of how to inversion with ADsurf. More examples and details will found in Jupyter notebook:
-### 1. Preparing the dispersion data
+****
+
+## Related Knoledges
+> Please refer to the article for theoretical details: [Multimodal surface wave inversion with automatic differentiation](https://academic.oup.com/gji/advance-article/doi/10.1093/gji/ggae155/7659841?login=true)
+
+### 1) Determinant Misfit Function v.s. Traditional Misift Function
+
+<div align="center"><img src='./Md_img/Figure2.jpg'></div>
+
+### 2) Automatic Differentiation and Computational Graph
+<div align="center"><img src='./Md_img/Figure6.jpg'></div>
+
+***
+
+## Examples
+<details>
+The follwing is an example of how to inversion with ADsurf. More examples and details will found in Jupyter notebook
+
+### 1) Preparing the dispersion data
 the observed dispersion data need to be orginized by a 2-D matrix: the first column is the `period (s)` or `frequency (Hz)`； and the second column is the observed `phase velocity (km/s)`;
 
 | period (s) 	| Phase Velocity (km/s) 	|
@@ -46,15 +67,16 @@ the observed dispersion data need to be orginized by a 2-D matrix: the first col
 
 <div align="center"><img src="Md_img/2023-07-03-09-50-23.png" width=60%></div>
 
-### 2. Setting the model paramters and inversion paramters
+### 2) Setting the model paramters and inversion paramters
 Details of all the paramters can be fond in [jupyter notebooks]("./00_test_increase.ipynb")
 
 the key paramters including 
-`Learning rate` : the step size for inversion
-`damp`: including the damping of verticle and horizontal(only for 2-D and 3-D inversion)
-`layering method`: the initializing method provide by ADsurf. 
 
-### 3. Model initializing
+- `Learning rate` : the step size for inversion
+- `damp`: including the damping of verticle and horizontal(only for 2-D and 3-D inversion)
+- `layering method`: the initializing method provide by ADsurf. 
+
+### 3) Model initializing
 We provide two commond used layering method named Layering by ratio(LR) and Layering by Number (LN) for uses, more details can be found in [Cox and Teague (2016)](https://academic.oup.com/gji/article/207/1/422/2583608)
 
 <div align="center"><img src="Md_img/2023-07-03-09-52-46.png"></div>
@@ -63,7 +85,7 @@ However, it should be noted that linear inversion inevitably tends to fall into 
 
 More detail and comparation will discuss in Inversion part.
 
-### 4. Inversion
+### 4) Inversion
 we have built a complete object-oriented programs:
 ```python
 inversion_model = inversion(
@@ -89,11 +111,10 @@ We compared the computational efficiency of ADsurf and finite difference methods
 
 <div align="center"><img src="Md_img/time_compare.png"></div>
 
-### 5. Inverted dispersion curves
-<div align="center"><img src="Md_img/2023-07-03-10-29-45.png"></div>
-
-### 6. result saving
+### 5) result saving
 You can save all the intermediate processes and results of the inverson.
+
+</details>
 
 ## Contributing
 Contributions are welcom [.disba](https://github.com/keurfonluu/disba) and [Computer Programs in Seismology (CPS)](http://www.eas.slu.edu/eqc/eqccps.html).
@@ -103,13 +124,13 @@ The ADsurf package is distributed under the [MIT license]("./LICENSE") (free sof
 
 ### Contact
  Liu Feng @ USTC, Email: liufeng2317@mail.ustc.edu.cn
- Zhao Yan @ USTC, Email: zhaoyan123@mail.ustc.edu.cn
+
 ```python
 @software{LiuFeng2317,
   author       = {Feng Liu},
   title        = {TorchInversion},
   month        = July,
   year         = 2023,
-  version      = {v0.0.1},
+  version      = {v1.0.0},
 }
 ```
