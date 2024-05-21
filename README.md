@@ -2,7 +2,7 @@
  * @Author: LiuFeng(USTC) : liufeng2317@mail.ustc.edu.cn
  * @Date: 2023-02-10 17:39:49
  * @LastEditors: LiuFeng
- * @LastEditTime: 2024-05-22 00:13:14
+ * @LastEditTime: 2024-05-22 00:15:00
  * @FilePath: /AD_github/README.md
  * @Description: 
  * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -146,7 +146,7 @@ You can save all the intermediate processes and results of the inverson.
 ```python
 @software{LiuFeng2317,
   author       = {Feng Liu},
-  title        = {TorchInversion},
+  title        = {ADsurf},
   month        = July,
   year         = 2023,
   version      = {v1.0.0},
