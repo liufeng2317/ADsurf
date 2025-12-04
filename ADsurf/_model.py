@@ -164,6 +164,7 @@ class iter_inversion():
                 pbar.set_description("Iter:{},lr:{},DampV:{},loss sum:{:.4}".format(j,lr,damp_vertical,np.sum(loss.detach().numpy())))
             else:
                 pbar.set_description("Iter:{},lr:{},DampV:{},loss sum:{:.4}".format(j,lr,damp_vertical,np.sum(loss.cpu().detach().numpy())))
+            
             # early stopping
             if j>0:
                 if loss_list[j]>0.6:
@@ -184,6 +185,7 @@ class iter_inversion():
                 loss_list = loss_list[:j]
                 print("Early Stopping in Iteration:{}".format(j))
                 break
+    
         ###############################
         # get the best inversoin result
         ###############################
@@ -519,15 +521,15 @@ class multi_inversion():
         init_vp = self.init_model.init_model["vp"]
         init_thick = self.init_model.init_model["thick"]
         init_rho = self.init_model.init_model["rho"]
-        b = numpy2tensor(list2numpy(init_vs)).to(self.device)
-        a = numpy2tensor(list2numpy(init_vp)).to(self.device)
+        b   = numpy2tensor(list2numpy(init_vs)).to(self.device)
+        a   = numpy2tensor(list2numpy(init_vp)).to(self.device)
         rho = numpy2tensor(list2numpy(init_rho)).to(self.device)
-        d = numpy2tensor(list2numpy(init_thick)).to(self.device)
+        d   = numpy2tensor(list2numpy(init_thick)).to(self.device)
         
         # observed dispersion data [[t,v],[t,v]] 【station,pvs_num,[t,v]]】
         pvs_obs = list2numpy(self.pvs_obs)
-        tlist = numpy2tensor(pvs_obs[:,:,0]).to(self.device)
-        vlist = numpy2tensor(pvs_obs[:,:,1]).to(self.device)
+        tlist   = numpy2tensor(pvs_obs[:,:,0]).to(self.device)
+        vlist   = numpy2tensor(pvs_obs[:,:,1]).to(self.device)
         
         # initialized the calculator
         damp_vertical   = self.inv_param.damp_vertical
@@ -602,7 +604,7 @@ class multi_inversion():
                     elif k ==1:
                         with torch.no_grad():
                             if self.device=="cpu":
-                                depth_temp = np.cumsum(para.data.detach().numpy())
+                                depth_temp = np.cumsum(para.data.detach().numpy(), axis=1)
                             else:
                                 depth_temp = np.cumsum(para.data.cpu().detach().numpy(),axis=1)
                             if layering_method == "LR":

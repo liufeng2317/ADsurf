@@ -233,10 +233,10 @@ def cal_dispersion_curve(vel_model,model_param,sampling_method="log-wavelength",
     """
         dispOrder: [0,1,2]
     """
-    b = numpy2tensor(list2numpy(vel_model["vs"]))
-    a = numpy2tensor(list2numpy(vel_model["vp"]))
+    b   = numpy2tensor(list2numpy(vel_model["vs"]))
+    a   = numpy2tensor(list2numpy(vel_model["vp"]))
     rho = numpy2tensor(list2numpy(vel_model["rho"]))
-    d = numpy2tensor(list2numpy(vel_model["thick"]))
+    d   = numpy2tensor(list2numpy(vel_model["thick"]))
     # tlist
     tmin = model_param.tmin; tmax=model_param.tmax
     fmin = 1/tmax;           fmax=1/tmin
@@ -263,7 +263,6 @@ def cal_dispersion_curve(vel_model,model_param,sampling_method="log-wavelength",
         mask0 = (pvs_true_0>0)
         t0 = numpy2tensor(t)[mask0]
         pvs_true0 = pvs_true_0[mask0]
-    # mask0 = (pvs_true_0>0)* ((t<0.05) + (t>0.1))
     if 1 in dispOrder:
         # first order
         mode = 1

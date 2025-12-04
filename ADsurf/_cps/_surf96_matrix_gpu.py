@@ -255,9 +255,6 @@ def dltar4_matrix(vlist, tlist, d, a, b, rho, llw,device):
         rho : density : 1D list
         llw : sign for mark contain water layer or not : 0 for contain water layer
     """
-    # vlist = tensor2numpy(vlist)
-    # tlist = tensor2numpy(tlist)
-    # vlist = torch.tensor(vlist).reshape(1,-1)
     vlist = numpy2tensor(vlist).reshape(1,-1).to(device)
     tlist = numpy2tensor(tlist).to(device)
     omega_list = (twopi/tlist).reshape(1,-1).to(device)
